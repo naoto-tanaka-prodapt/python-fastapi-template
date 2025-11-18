@@ -59,9 +59,16 @@ async def multiply(x: int, y: int):
 
 @app.get("/job-board/{company_name}")
 async def get_jobs(company_name: str):
+  """job-board endpoint"""
   try: 
     jobs = jobs_data[company_name]
   except:
     raise HTTPException(status_code=404, detail="Company not found")
   
   return jobs
+
+
+@app.get("/job-board/error/{company_name}")
+async def get_jobs_not_handling_error(company_name: str):
+  """job-board endpoint not handling exception for testing"""
+  return jobs_data[company_name]
