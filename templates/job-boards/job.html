@@ -1,0 +1,16 @@
+<html>
+<head>
+    <title>Job Page</title>
+    <!-- <link href="{{ url_for('static', path='/styles.css') }}" rel="stylesheet"> -->
+</head>
+<body>
+    <!-- <img src={{img_url}} alt="logo" /> -->
+    <img src=/static/img/{{img_url}} alt="logo" />
+    {% for item in job_list %}
+    <div>
+        <h1>{{ item.title }}</h1>
+        <p>{{ item.descrition }}</p>
+    </div>
+    {% endfor %}
+</body>
+</html>

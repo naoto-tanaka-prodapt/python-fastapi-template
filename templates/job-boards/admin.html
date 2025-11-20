@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Image</title>
+</head>
+<body>
+
+<h2>Upload Image</h2>
+
+<form action="/uploadfile" enctype="multipart/form-data" method="post">
+    <select name="company">
+        {% for option in ["acme", "bcg", "atlas"] %}
+            <option value="{{ option }}">{{ option }}</option>
+        {% endfor %}
+    </select>
+    <input type="file" name="file" accept="image/*">
+    <button type="submit">Upload</button>
+</form>
+
+{% if filename %}
+    <h3>Uploaded Image:</h3>
+    <img src="/static/img/{{ filename }}" width="300">
+{% endif %}
+
+</body>
+</html>
