@@ -1,5 +1,6 @@
 from fastapi import APIRouter
-    
+from collections import Counter
+
 candidates = [
     {
         "id": 1,
@@ -41,15 +42,20 @@ async def stage_summary():
 
     # define the order of hiring
     hiring_order = [
-        "applied", "screening", "first", "second", "offer", "hired"
+        "applied", "screening", "first", "second", "offer", "hired", "rejected"
     ]
 
     # count per stages
-    stage_counts = {s: 0 for s in hiring_order}
-    for c in candidates:
-        s = c["stage"]
-        if s in stage_counts:
-            stage_counts[s] += 1
+    # stage_counts = {s: 0 for s in hiring_order}
+    # for c in candidates:
+    #     s = c["stage"]
+    #     if s in stage_counts:
+    #         stage_counts[s] += 1
+
+    # functional programing
+    # stages_only = map(lambda c: c["stage"], candidates) # execute lambda per candidate
+    # stage_counts = Counter(stages_only) # count
+    stage_counts = Counter(c["stage"] for c in candidates)
 
     stages = [
         {
@@ -71,10 +77,15 @@ def get_rejection_reasons():
     rejected = [c for c in candidates if c["stage"] == "rejected"]
     total_rejected = len(rejected)
 
-    reason_counts = {}
-    for c in rejected:
-        r = c["rejected_reason"] or "other"
-        reason_counts[r] = reason_counts.get(r, 0) + 1
+    # reason_counts = {}
+    # for c in rejected:
+    #     r = c["rejected_reason"] or "other"
+    #     reason_counts[r] = reason_counts.get(r, 0) + 1
+
+    # functional programing
+    # reason_only = map(lambda c: c["rejected_reason"] or "other", rejected)
+    # reason_counts = Counter(reason_only) 
+    reason_counts = Counter(c["rejected_reason"] or "other" for c in rejected)
 
     reasons = [
         {

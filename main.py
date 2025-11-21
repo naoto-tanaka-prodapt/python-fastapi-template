@@ -3,6 +3,8 @@ from routers import admin_router, metrics_router
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from db import get_session
+from sqlalchemy import text
 
 app = FastAPI()
 app.include_router(admin_router.router, prefix="")
@@ -60,7 +62,13 @@ async def index():
 
 @app.get("/health")
 async def health():
-  return {"status": "ok"}
+  try:
+      with get_session() as session:
+        session.execute(text("SELECT 1"))
+      return {"status": "ok"}
+  except Exception as e:
+      print(f"Failed to connect: {e}")
+      return {"status": "ng"}
 
 @app.get("/add")
 async def add(x: int, y: int):
