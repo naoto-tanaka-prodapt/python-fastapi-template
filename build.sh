@@ -1,5 +1,5 @@
 #!/bin/bash
-set -0
+set -o
 
 # backend
 pip install -r requirements.txt
