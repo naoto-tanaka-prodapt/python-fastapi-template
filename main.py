@@ -9,7 +9,7 @@ from sqlalchemy import text
 from models import JobApplication, JobBoard, JobPost
 from file_storage import upload_file
 from config import settings
-from utils import create_random_string
+from utils import create_random_file_name
 from schemas import JobApplicationForm, JobBoardForm, JobPostForm
 
 app = FastAPI()
@@ -54,7 +54,7 @@ async def api_job_boards():
 @app.post("/api/job-boards")
 async def api_create_new_job_boards(job_board_form: Annotated[JobBoardForm, Form()]):
   _, extension = os.path.splitext(job_board_form.logo.filename)
-  file_name_random = create_random_string(15) + extension
+  file_name_random = create_random_file_name(extension)
   logo_contents = await job_board_form.logo.read()
   file_url = upload_file("company-logos", file_name_random, logo_contents, job_board_form.logo.content_type)
   new_job_board = JobBoard(slug=job_board_form.slug, logo_path=file_url)
@@ -75,7 +75,7 @@ async def api_update_job_boards(job_board_id: int, job_board_form: Annotated[Job
     
     # file upload
     _, extension = os.path.splitext(job_board_form.logo.filename)
-    file_name_random = create_random_string(15) + extension
+    file_name_random = create_random_file_name(extension)
     logo_contents = await job_board_form.logo.read()
     file_url = upload_file("company-logos", file_name_random, logo_contents, job_board_form.logo.content_type)
 
@@ -99,7 +99,7 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
 
   # Upload Resume
   _, extension = os.path.splitext(job_application_form.resume.filename)
-  file_name_random = create_random_string(15) + extension
+  file_name_random = create_random_file_name(extension)
   logo_contents = await job_application_form.resume.read()
   file_url = upload_file("resumes", file_name_random, logo_contents, job_application_form.resume.content_type)
 

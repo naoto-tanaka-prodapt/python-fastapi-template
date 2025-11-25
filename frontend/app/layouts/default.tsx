@@ -1,20 +1,49 @@
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Link, Outlet } from "react-router";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  navigationMenuTriggerStyle,
+} from "~/components/ui/navigation-menu";
 
 export default function DefaultLayout() { 
-  const navLinkStyle=
-    ({isActive}) => {
-      return {backgroundColor: isActive ? "yellow" : "inherit"}
-    }
-  return (<main>
-    <nav style={{fontWeight: 'bolder', 
-                 display: 'flex', 
-                 justifyContent: 'space-between', 
-                 width: 150}}>
-      <NavLink to="/" style={navLinkStyle}>Home</NavLink>
-      <NavLink to="/job-boards" style={navLinkStyle}>JobBoards</NavLink>
-    </nav>
-    <Outlet/>
-  </main>);
+  return (
+    <main>
+      <header className="border-b mb-4">
+        <div className="mx-auto flex h-16 justify-between px-4">
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src="/header-icon.jpg"
+            width={32}
+            height={32}
+          />
+          <span className="text-lg font-bold">Jobify</span>
+        </Link>
+        <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavLink to="/">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Home
+                </NavigationMenuLink>
+              </NavLink>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavLink to="/job-boards">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  JobBoards
+                </NavigationMenuLink>
+              </NavLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+        </div>
+      </header>
+      <Outlet/>
+    </main>
+  );
 }
 
  
