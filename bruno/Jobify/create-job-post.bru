@@ -1,0 +1,22 @@
+meta {
+  name: create-job-post
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{BASE_URL}}/api/job-posts
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  title: developer
+  description: developer
+  job_board_id: 3
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

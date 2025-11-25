@@ -10,7 +10,7 @@ from models import JobApplication, JobBoard, JobPost
 from file_storage import upload_file
 from config import settings
 from utils import create_random_string
-from schemas import JobApplicationForm, JobBoardForm
+from schemas import JobApplicationForm, JobBoardForm, JobPostForm
 
 app = FastAPI()
 
@@ -138,6 +138,20 @@ async def close_job_post(job_post_id: int):
     session.commit()
     session.refresh(target)
   return target
+
+@app.post("/api/job-posts")
+async def api_create_new_job_posts(job_post_form: Annotated[JobPostForm, Form()]):
+  new_job_post = JobPost(
+    job_board_id=job_post_form.job_board_id,
+    title=job_post_form.title,
+    description=job_post_form.description
+  )
+
+  with get_session() as session:
+    session.add(new_job_post)
+    session.commit()
+    session.refresh(new_job_post)
+  return new_job_post
   
 ## For UI
 app.mount("/assets", StaticFiles(directory="frontend/build/client/assets"))
