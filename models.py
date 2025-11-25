@@ -7,6 +7,7 @@ class JobBoard(Base):
   __tablename__ = 'job_boards'
   id = Column(Integer, primary_key=True)
   slug = Column(String, nullable=False, unique=True)
+  logo_path = Column(String, nullable=True, unique=False)
 
   job_post = relationship("JobPost")
 
