@@ -1,0 +1,20 @@
+meta {
+  name: close-job-post
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{BASE_URL}}/api/job-posts/:job_post_id/close
+  body: none
+  auth: inherit
+}
+
+params:path {
+  job_post_id: 2
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

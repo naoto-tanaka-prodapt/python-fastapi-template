@@ -1,26 +1,16 @@
 import os
 from typing import Annotated
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, Form, HTTPException
 from routers import admin_router, metrics_router
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from db import get_session
-from sqlalchemy import insert, text
-from models import JobBoard, JobPost
-from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import text
+from models import JobApplication, JobBoard, JobPost
 from file_storage import upload_file
 from config import settings
 from utils import create_random_string
-
-### Schema
-class JobBoardForm(BaseModel):
-  slug: str = Field(..., min_length=3, max_length=20)
-  logo: UploadFile = File(...)
-
-  @field_validator("slug")
-  @classmethod
-  def to_lowercase(cls, v):
-    return v.lower()
+from schemas import JobApplicationForm, JobBoardForm
 
 app = FastAPI()
 
@@ -37,7 +27,12 @@ async def health():
   except Exception as e:
       print(f"Failed to connect: {e}")
       return {"status": "ng"}
-
+  
+## local file directory
+if not settings.PRODUCTION:
+  app.mount("/uploads", StaticFiles(directory="uploads"))
+  
+## JobBoards
 @app.get("/api/job-boards/{job_board_id}/job-posts")
 async def get_jobs_by_job_board_id(job_board_id: int):
   with get_session() as session:
@@ -91,28 +86,63 @@ async def api_update_job_boards(job_board_id: int, job_board_form: Annotated[Job
     session.refresh(target)
   return target
 
-# @app.post("/api/job-boards")
-# async def api_create_new_job_boards(job_board_form: JobBoardForm):
-#   return {"slug": job_board_form.slug}
-  
-app.mount("/assets", StaticFiles(directory="frontend/build/client/assets"))
+## JobApplications
+@app.post("/api/job-applications")
+async def api_create_new_job_applications(job_application_form: Annotated[JobApplicationForm, Form()]):
+  # check jobpost status
+  with get_session() as session:
+    target = session.query(JobPost).filter(JobPost.id == job_application_form.job_post_id).first()
+    if target is None:
+      raise HTTPException(status_code=404, detail="Job Post not found")
+    if target.is_open is False:
+      raise HTTPException(status_code=400, detail="This job post is already closed")
 
-if not settings.PRODUCTION:
-  app.mount("/uploads", StaticFiles(directory="uploads"))
+  # Upload Resume
+  _, extension = os.path.splitext(job_application_form.resume.filename)
+  file_name_random = create_random_string(15) + extension
+  logo_contents = await job_application_form.resume.read()
+  file_url = upload_file("resumes", file_name_random, logo_contents, job_application_form.resume.content_type)
+
+  # Create Job Application
+  new_job_application = JobApplication(
+      job_post_id=job_application_form.job_post_id,
+      first_name=job_application_form.first_name,
+      last_name=job_application_form.last_name,
+      email=job_application_form.email,
+      resume_path=file_url
+    )
+   
+  with get_session() as session:   
+    session.add(new_job_application)
+    session.commit()
+    session.refresh(new_job_application)
+  return new_job_application
+
+@app.get("/api/job-applications")
+async def api_job_applications():
+  with get_session() as session:
+    job_applications = session.query(JobApplication).all()
+    return job_applications
+  
+## Job Post
+@app.patch("/api/job-posts/{job_post_id}/close")
+async def close_job_post(job_post_id: int):
+  with get_session() as session:
+    # get record
+    target = session.query(JobPost).filter(JobPost.id == job_post_id).first()
+    if target is None:
+      raise HTTPException(status_code=404, detail="Job Post not found")
+    
+    # Change is_open
+    target.is_open = False
+    session.commit()
+    session.refresh(target)
+  return target
+  
+## For UI
+app.mount("/assets", StaticFiles(directory="frontend/build/client/assets"))
 
 @app.get("/{full_path:path}")
 async def catch_all(full_path: str):
   indexFilePath = os.path.join("frontend", "build", "client", "index.html")
   return FileResponse(path=indexFilePath, media_type="text/html")
- 
-# @app.post("/multiply")
-# async def multiply(x: int, y: int):
-#   result = x * y
-#   return {
-#     "result": result
-#   }
-# @app.get("/render/{keyword}", response_class=HTMLResponse)
-# async def read_item(request: Request, keyword: str):
-#     return templates.TemplateResponse(
-#         request=request, name="item.html", context={"keyword": keyword}
-#     )
