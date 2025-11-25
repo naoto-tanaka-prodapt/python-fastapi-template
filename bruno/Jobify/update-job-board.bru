@@ -1,0 +1,25 @@
+meta {
+  name: update-job-board
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{BASE_URL}}/api/job-boards/:id
+  body: multipartForm
+  auth: inherit
+}
+
+params:path {
+  id: 4
+}
+
+body:multipart-form {
+  slug: atlas
+  logo: @file(C:\Users\OI.naoto\prodapt-training\python-fastapi-template\static\img\atlascorporation.jpg)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
