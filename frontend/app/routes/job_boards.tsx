@@ -44,7 +44,7 @@ export default function JobBoards({loaderData}) {
               </TableCell>
               <TableCell><Link to={`/job-boards/${jobBoard.id}/job-posts`} className="capitalize">{jobBoard.slug}</Link></TableCell>
               <TableCell>
-                <Link to={`/job-boards/edit?id=${jobBoard.id}&slug=${jobBoard.slug}&logo=${jobBoard.logo_path}`}>Edit</Link>
+                <Link to={`/job-boards/${jobBoard.id}/edit`}>Edit</Link>
                 <fetcher.Form method="post"
                   onSubmit={(event) => {
                     const response = confirm(

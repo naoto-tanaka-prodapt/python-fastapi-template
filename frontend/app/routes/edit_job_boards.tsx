@@ -3,7 +3,13 @@ import type { Route } from "../+types/root";
 import { Field, FieldGroup, FieldLabel, FieldLegend } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
-import { useSearchParams } from "react-router";
+
+export async function clientLoader({params} : Route.ClientLoaderArgs) {
+  const jobBoardId = params.companyId;
+  const res = await fetch(`/api/job-boards/${jobBoardId}`);
+  const jobBoard = await res.json();
+  return {jobBoard}
+}
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
     const formData = await request.formData()
@@ -15,12 +21,10 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     return redirect('/job-boards')
 }
 
-export default function EditJobBoardForm(_: Route.ComponentProps) {
-  const [searchParams] = useSearchParams();
-
-  const job_board_id = searchParams.get("id") ?? "";
-  const slug = searchParams.get("slug") ?? "";
-  const logo_path = searchParams.get("logo");
+export default function EditJobBoardForm({ loaderData }: Route.ComponentProps) {
+  const job_board_id = loaderData.jobBoard.id
+  const slug = loaderData.jobBoard.slug ?? "";
+  const logo_path = loaderData.jobBoard.logo_path;
 
   return (
     <div className="w-full max-w-md">

@@ -1,0 +1,21 @@
+meta {
+  name: auth-admin
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BASE_URL}}/api/admin-login
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  username: admin
+  password: password
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

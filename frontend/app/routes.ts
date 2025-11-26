@@ -12,7 +12,12 @@ export default [
         route("", "routes/job_boards.tsx"),                    // /job-boards
         route(":companyId/job-posts", "routes/job_posts.tsx"), // /job-boards/:companyId/job-posts
         route("/new", "routes/new_job_boards.tsx"), // /job-boards/new
-        route("/edit", "routes/edit_job_boards.tsx"), // /job-boards/edit
+        route("/:companyId/edit", "routes/edit_job_boards.tsx"), // /job-boards/:companyId/edit
+    ]),
+    ...prefix("job-applications", [
+        route("", "routes/job_applications.tsx"),                    // /job-applications
+        route("/new", "routes/new_job_application.tsx"), // /job-applications/new
+        route("/:jobApplicationId/edit", "routes/edit_job_application.tsx"), // /job-applications/edit
     ]),
   ])
 ] satisfies RouteConfig;

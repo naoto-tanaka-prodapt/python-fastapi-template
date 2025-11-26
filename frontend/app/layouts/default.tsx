@@ -37,6 +37,14 @@ export default function DefaultLayout() {
                 </NavigationMenuLink>
               </NavLink>
             </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavLink to="/job-applications">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  JobApplications
+                </NavigationMenuLink>
+              </NavLink>
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
         </div>
