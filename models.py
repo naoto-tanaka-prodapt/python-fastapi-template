@@ -21,7 +21,7 @@ class JobPost(Base):
   is_open = Column(Boolean, nullable=True, default=True)
 
   job_board = relationship("JobBoard")
-  job_application = relationship("JobApplication")
+  # job_application = relationship("JobApplication")
 
 
 class JobApplication(Base):
@@ -33,4 +33,4 @@ class JobApplication(Base):
   email = Column(String, nullable=False)
   resume_path = Column(String, nullable=True)
 
-  job_post = relationship("JobPost")
+  # job_post = relationship("JobPost")

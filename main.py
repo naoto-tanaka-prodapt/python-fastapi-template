@@ -10,7 +10,7 @@ from models import JobApplication, JobBoard, JobPost
 from file_storage import upload_file
 from config import settings
 from utils import create_random_file_name
-from schemas import JobApplicationForm, JobBoardForm, JobPostForm
+from schemas import JobApplicationForm, JobBoardForm, JobBoardPatchForm, JobPostForm
 
 app = FastAPI()
 
@@ -69,7 +69,7 @@ async def api_create_new_job_boards(job_board_form: Annotated[JobBoardForm, Form
 async def api_update_job_boards(job_board_id: int, job_board_form: Annotated[JobBoardForm, Form()]):
   with get_session() as session:
     # get record
-    target = session.query(JobBoard).filter(JobBoard.id == job_board_id).first()
+    target = session.get(JobBoard, job_board_id)
     if target is None:
       raise HTTPException(status_code=404, detail="Job Board not found")
     
@@ -83,15 +83,53 @@ async def api_update_job_boards(job_board_id: int, job_board_form: Annotated[Job
     target.slug = job_board_form.slug
     target.logo_path = file_url
     session.commit()
+  return target
+
+@app.patch("/api/job-boards/{job_board_id}")
+async def api_patch_job_boards(job_board_id: int, job_board_form: Annotated[JobBoardPatchForm, Form()]):
+  with get_session() as session:
+    # get record
+    target = session.get(JobBoard, job_board_id)
+    if target is None:
+      raise HTTPException(status_code=404, detail="Job Board not found")
+    
+    # file upload if logo exist
+    if job_board_form.logo:
+      _, extension = os.path.splitext(job_board_form.logo.filename)
+      file_name_random = create_random_file_name(extension)
+      logo_contents = await job_board_form.logo.read()
+      file_url = upload_file("company-logos", file_name_random, logo_contents, job_board_form.logo.content_type)
+      target.logo_path = file_url
+
+    # file upload if slug exist
+    if job_board_form.slug:
+      target.slug = job_board_form.slug
+
+    # commit
+    session.commit()
     session.refresh(target)
   return target
+
+@app.delete("/api/job-boards/{job_board_id}")
+async def api_delete_job_boards(job_board_id: int):
+  with get_session() as session:
+    # delete record
+    target = session.get(JobBoard, job_board_id)
+    if target is None:
+      raise HTTPException(status_code=404, detail="Job Board not found")
+    
+    session.delete(target)
+    session.commit()
+  return {
+    "result": "success"
+  }
 
 ## JobApplications
 @app.post("/api/job-applications")
 async def api_create_new_job_applications(job_application_form: Annotated[JobApplicationForm, Form()]):
   # check jobpost status
   with get_session() as session:
-    target = session.query(JobPost).filter(JobPost.id == job_application_form.job_post_id).first()
+    target = session.get(JobPost, job_application_form.job_post_id)
     if target is None:
       raise HTTPException(status_code=404, detail="Job Post not found")
     if target.is_open is False:
@@ -129,14 +167,13 @@ async def api_job_applications():
 async def close_job_post(job_post_id: int):
   with get_session() as session:
     # get record
-    target = session.query(JobPost).filter(JobPost.id == job_post_id).first()
+    target = session.get(JobPost, job_post_id)
     if target is None:
       raise HTTPException(status_code=404, detail="Job Post not found")
     
     # Change is_open
     target.is_open = False
     session.commit()
-    session.refresh(target)
   return target
 
 @app.post("/api/job-posts")

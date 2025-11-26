@@ -1,0 +1,25 @@
+meta {
+  name: patch-job-board
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{BASE_URL}}/api/job-boards/:id
+  body: multipartForm
+  auth: inherit
+}
+
+params:path {
+  id: 8
+}
+
+body:multipart-form {
+  logo: @file(C:\Users\OI.naoto\prodapt-training\python-fastapi-template\static\img\bcg.jpg)
+  ~slug: bcg2
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

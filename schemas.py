@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import File, UploadFile
 from pydantic import BaseModel, Field, field_validator
 
@@ -6,10 +7,19 @@ class JobBoardForm(BaseModel):
   slug: str = Field(..., min_length=3, max_length=20)
   logo: UploadFile = File(...)
 
-  @field_validator("slug")
-  @classmethod
-  def to_lowercase(cls, v):
-    return v.lower()
+  # @field_validator("slug")
+  # @classmethod
+  # def to_lowercase(cls, v):
+  #   return v.lower()
+  
+class JobBoardPatchForm(BaseModel):
+  slug: Optional[str] = Field(None, min_length=3, max_length=20)
+  logo: Optional[UploadFile] = File(None)
+
+  # @field_validator("slug")
+  # @classmethod
+  # def to_lowercase(cls, v):
+  #   return v.lower()
   
 class JobApplicationForm(BaseModel):
   job_post_id: int
