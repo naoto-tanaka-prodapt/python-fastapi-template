@@ -1,18 +1,19 @@
 import os
 from typing import Annotated
-from fastapi import Form, HTTPException, APIRouter
+from fastapi import Form, HTTPException, APIRouter, BackgroundTasks
 from db import get_session
 from sqlalchemy import text
 from models import JobApplication, JobPost
 from file_storage import upload_file
 from utils import create_random_file_name
 from schemas import JobApplicationForm
+from emailer import send_email
 
 router = APIRouter()
 
 ## Job Application
 @router.post("/api/job-applications")
-async def api_create_new_job_applications(job_application_form: Annotated[JobApplicationForm, Form()]):
+async def api_create_new_job_applications(job_application_form: Annotated[JobApplicationForm, Form()], background_task: BackgroundTasks):
   # check jobpost status
   with get_session() as session:
     target = session.get(JobPost, job_application_form.job_post_id)
@@ -40,6 +41,13 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
     session.add(new_job_application)
     session.commit()
     session.refresh(new_job_application)
+
+  background_task.add_task(
+    send_email,
+    new_job_application.email,
+    "Acknowledgement",
+    "We have received your job application"
+  )
   return new_job_application
 
 @router.get("/api/job-applications")

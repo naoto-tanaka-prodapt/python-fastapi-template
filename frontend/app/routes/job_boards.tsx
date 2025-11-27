@@ -3,11 +3,14 @@ import { Avatar, AvatarImage } from "~/components/ui/avatar";
 import type { Route } from "../+types/root";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { Button } from "~/components/ui/button";
+import { userContext } from "~/context";
 
-export async function clientLoader() {
+export async function clientLoader({ context }: Route.ClientLoaderArgs) {
+  const me = context.get(userContext)
+  const isAdmin = me && me.is_admin
   const res = await fetch(`/api/job-boards`);
   const jobBoards = await res.json();
-  return {jobBoards}
+  return {jobBoards, isAdmin}
 }
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
@@ -20,12 +23,16 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
 export default function JobBoards({loaderData}) {
   const fetcher = useFetcher()
+  console.log(loaderData.isAdmin)
 
   return (
-    <>
-    <Button className="">
-      <Link to="/job-boards/new">Add New Job Board</Link>
-    </Button>
+    <div className="">
+    { loaderData.isAdmin ? 
+      <Button className="">
+        <Link to="/job-boards/new">Add New Job Board</Link>
+      </Button>
+      : <></>
+    }
     <Table className="w-1/2">
       <TableHeader>
         <TableRow>
@@ -43,6 +50,7 @@ export default function JobBoards({loaderData}) {
                 : <></>}
               </TableCell>
               <TableCell><Link to={`/job-boards/${jobBoard.id}/job-posts`} className="capitalize">{jobBoard.slug}</Link></TableCell>
+              { loaderData.isAdmin &&
               <TableCell>
                 <Link to={`/job-boards/${jobBoard.id}/edit`}>Edit</Link>
                 <fetcher.Form method="post"
@@ -59,10 +67,11 @@ export default function JobBoards({loaderData}) {
                   <button>Delete</button>
                 </fetcher.Form>
               </TableCell>
+              }
             </TableRow>
         )}
       </TableBody>
     </Table>
-    </>
+    </div>
   )
 }

@@ -6,8 +6,16 @@ import {
   NavigationMenuLink,
   navigationMenuTriggerStyle,
 } from "~/components/ui/navigation-menu";
+import { userContext } from "~/context";
+import type { Route } from "../+types/root";
 
-export default function DefaultLayout() { 
+export async function clientLoader({ context }: Route.ClientLoaderArgs) {
+  const me = context.get(userContext)
+  const isAdmin = me && me.is_admin
+  return {isAdmin}
+}
+
+export default function DefaultLayout( {loaderData}: Route.ComponentProps ) { 
   return (
     <main>
       <header className="border-b mb-4">
@@ -44,6 +52,20 @@ export default function DefaultLayout() {
                   JobApplications
                 </NavigationMenuLink>
               </NavLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+            { loaderData.isAdmin ?
+              <NavLink to="/admin-logout">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Logout
+                </NavigationMenuLink>
+              </NavLink>
+            : <NavLink to="/admin-login">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Login
+                </NavigationMenuLink>
+              </NavLink>
+            }
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>

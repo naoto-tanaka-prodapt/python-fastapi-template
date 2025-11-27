@@ -8,34 +8,38 @@ from fastapi.staticfiles import StaticFiles
 from db import get_session
 from sqlalchemy import text
 from models import JobPost
-from file_storage import upload_file
 from config import settings
-from utils import create_random_file_name
-from auth import authenticate_admin
-from schemas import JobBoardForm, JobBoardPatchForm, JobPostForm, AdminLoginForm
+from auth import authenticate_admin, AdminAuthzMiddleware, AdminSessionMiddleware, delete_admin_session
+from schemas import JobPostForm, AdminLoginForm
+from starlette.middleware.base import BaseHTTPMiddleware
+from emailer import send_email
 
 app = FastAPI()
 
 app.include_router(job_board_router.router)
 app.include_router(job_application_router.router)
 
-PROTECTED_PATHS = [
-  ("/api/job-boards", "POST")
-]
+app.add_middleware(AdminAuthzMiddleware)
+app.add_middleware(AdminSessionMiddleware)
 
-# Middleware
-@app.middleware("http")
-async def check_cookie_and_add_process_time(request: Request, call_next):
-  if (request.url.path, request.method) in PROTECTED_PATHS:
-    cookie = request.cookies.get("admin_session")
-    if not cookie:
-      return JSONResponse(
-                status_code=403,
-                content={"detail": "Not Authenticated"},
-            )
+
+# PROTECTED_PATHS = [
+#   ("/api/job-boards", "POST")
+# ]
+
+# # # Middleware
+# @app.middleware("http")
+# async def check_cookie_and_add_process_time(request: Request, call_next):
+#   if (request.url.path, request.method) in PROTECTED_PATHS:
+#     cookie = request.cookies.get("admin_session")
+#     if not cookie:
+#       return JSONResponse(
+#                 status_code=403,
+#                 content={"detail": "Not Authenticated"},
+#             )
     
-  response = await call_next(request)
-  return response
+#   response = await call_next(request)
+#   return response
 
 @app.get("/api/health")
 async def health():
@@ -89,6 +93,16 @@ async def admin_login(response: Response, admin_login_form: Annotated[AdminLogin
       return {}
    else:
       raise HTTPException(status_code="403")
+   
+@app.get("/api/me")
+async def me(req: Request):
+  return {"is_admin": req.state.is_admin}
+
+@app.post("/api/admin-logout")
+async def admin_logout(request: Request, response: Response):
+  delete_admin_session(request.cookies.get("admin_session"))
+  secure = settings.PRODUCTION
+  response.delete_cookie(key="admin_session", httponly=True, secure=secure, samesite="LaX")
   
 ## For UI
 app.mount("/assets", StaticFiles(directory="frontend/build/client/assets"))
