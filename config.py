@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str
     ADMIN_USERNAME: str
     ADMIN_PASSWORD: str
+    RESEND_API_KEY: str
 
     class Config:
         env_file = ".env"
