@@ -8,6 +8,7 @@ from file_storage import upload_file
 from utils import create_random_file_name
 from schemas import JobApplicationForm
 from emailer import send_email
+from utils import evaluate_resume
 
 router = APIRouter()
 
@@ -25,8 +26,8 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
   # Upload Resume
   _, extension = os.path.splitext(job_application_form.resume.filename)
   file_name_random = create_random_file_name(extension)
-  logo_contents = await job_application_form.resume.read()
-  file_url = upload_file("resumes", file_name_random, logo_contents, job_application_form.resume.content_type)
+  resume_contents = await job_application_form.resume.read()
+  file_url = upload_file("resumes", file_name_random, resume_contents, job_application_form.resume.content_type)
 
   # Create Job Application
   new_job_application = JobApplication(
@@ -47,6 +48,12 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
     new_job_application.email,
     "Acknowledgement",
     "We have received your job application"
+  )
+  background_task.add_task(
+    evaluate_resume,
+    resume_contents,
+    target.description,
+    new_job_application.id
   )
   return new_job_application
 

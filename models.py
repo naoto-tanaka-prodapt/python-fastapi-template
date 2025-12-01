@@ -1,5 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.dialects.postgresql import JSONB
 
 Base = declarative_base()
 
@@ -34,3 +35,10 @@ class JobApplication(Base):
   resume_path = Column(String, nullable=True)
 
   # job_post = relationship("JobPost")
+
+class JobApplicationAIEvaluation(Base):
+  __tablename__ = 'job_application_ai_evaluations'
+  id = Column(Integer, primary_key=True)
+  job_application_id = Column(Integer, ForeignKey("job_applications.id"), nullable=False)
+  overall_score = Column(Integer, nullable=False)
+  evaluation = Column(JSONB, nullable=False) 
