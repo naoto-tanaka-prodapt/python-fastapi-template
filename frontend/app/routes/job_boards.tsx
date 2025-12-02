@@ -26,52 +26,71 @@ export default function JobBoards({loaderData}) {
   console.log(loaderData.isAdmin)
 
   return (
-    <div className="">
-    { loaderData.isAdmin ? 
-      <Button className="">
-        <Link to="/job-boards/new">Add New Job Board</Link>
-      </Button>
-      : <></>
-    }
-    <Table className="w-1/2">
-      <TableHeader>
-        <TableRow>
-          <TableHead>Logo</TableHead>
-          <TableHead>Slug</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-          {loaderData.jobBoards.map(
-          (jobBoard) => 
-            <TableRow key={jobBoard.id}>
-              <TableCell>
-                {jobBoard.logo_path
-                ?  <Avatar><AvatarImage src={jobBoard.logo_path}></AvatarImage></Avatar>
-                : <></>}
-              </TableCell>
-              <TableCell><Link to={`/job-boards/${jobBoard.id}/job-posts`} className="capitalize">{jobBoard.slug}</Link></TableCell>
-              { loaderData.isAdmin &&
-              <TableCell>
-                <Link to={`/job-boards/${jobBoard.id}/edit`}>Edit</Link>
-                <fetcher.Form method="post"
-                  onSubmit={(event) => {
-                    const response = confirm(
-                      `Please confirm you want to delete this job board '${jobBoard.slug}'.`,
-                    );
-                    if (!response) {
-                      event.preventDefault();
-                    }
-                  }}
-                >
-                  <input name="job_board_id" type="hidden" value={jobBoard.id}></input>
-                  <button>Delete</button>
-                </fetcher.Form>
-              </TableCell>
-              }
+    <div className="max-w-5xl mx-auto px-6 py-10 space-y-6">
+      {loaderData.isAdmin ? (
+        <div className="flex justify-end">
+          <Button>
+            <Link to="/job-boards/new">Add New Job Board</Link>
+          </Button>
+        </div>
+      ) : null}
+
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <Table className="w-full table-fixed">
+          <TableHeader>
+            <TableRow className="bg-slate-50">
+              <TableHead className="w-24 text-slate-600">Logo</TableHead>
+              <TableHead className="w-64 text-slate-600">Slug</TableHead>
+              {loaderData.isAdmin && <TableHead className="text-right text-slate-600">Actions</TableHead>}
             </TableRow>
-        )}
-      </TableBody>
-    </Table>
+          </TableHeader>
+          <TableBody>
+            {loaderData.jobBoards.map((jobBoard) => (
+              <TableRow key={jobBoard.id} className="hover:bg-slate-50/80 transition">
+                <TableCell className="py-4">
+                  {jobBoard.logo_path ? (
+                    <Avatar>
+                      <AvatarImage src={jobBoard.logo_path}></AvatarImage>
+                    </Avatar>
+                  ) : null}
+                </TableCell>
+                <TableCell className="py-4 font-medium w-64 max-w-xs">
+                  <Link
+                    to={`/job-boards/${jobBoard.id}/job-posts`}
+                    className="capitalize text-blue-600 hover:underline line-clamp-1"
+                    title={jobBoard.slug}
+                  >
+                    {jobBoard.slug}
+                  </Link>
+                </TableCell>
+                {loaderData.isAdmin && (
+                  <TableCell className="py-4">
+                    <div className="flex items-center justify-end gap-3">
+                      <Link to={`/job-boards/${jobBoard.id}/edit`} className="text-sm text-blue-600 hover:underline">
+                        Edit
+                      </Link>
+                      <fetcher.Form
+                        method="post"
+                        onSubmit={(event) => {
+                          const response = confirm(
+                            `Please confirm you want to delete this job board '${jobBoard.slug}'.`,
+                          );
+                          if (!response) {
+                            event.preventDefault();
+                          }
+                        }}
+                      >
+                        <input name="job_board_id" type="hidden" value={jobBoard.id}></input>
+                        <button className="text-sm text-red-600 hover:underline">Delete</button>
+                      </fetcher.Form>
+                    </div>
+                  </TableCell>
+                )}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }
