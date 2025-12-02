@@ -2,7 +2,7 @@ import os
 from config import settings
 from typing import Annotated
 from fastapi import FastAPI, Form, HTTPException, Request, Response
-from routers import job_application_router, job_board_router
+from routers import job_application_router, job_board_router, llm_router
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from db import get_session
@@ -18,6 +18,7 @@ app = FastAPI()
 
 app.include_router(job_board_router.router)
 app.include_router(job_application_router.router)
+app.include_router(llm_router.router)
 
 app.add_middleware(AdminAuthzMiddleware)
 app.add_middleware(AdminSessionMiddleware)

@@ -36,3 +36,6 @@ class JobPostForm(BaseModel):
 class AdminLoginForm(BaseModel):
   username : str
   password : str
+
+class ReviewDiscriptionForm(BaseModel):
+  description: str

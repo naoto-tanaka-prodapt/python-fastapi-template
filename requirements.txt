@@ -9,3 +9,5 @@ supabase==2.24.0 # File Storage
 httpx==0.28.1 # HTTP client
 openai==2.8.1 # LLM
 PyPDF2==3.0.1 # PDF to Text
+langchain==1.1.0 # Langchain framework
+langchain-openai==1.1.0 # Langchain Open AI interface
