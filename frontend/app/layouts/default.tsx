@@ -31,40 +31,40 @@ export default function DefaultLayout( {loaderData}: Route.ComponentProps ) {
         <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
-              <NavLink to="/">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <NavigationMenuLink asChild>
+                <NavLink to="/" className={navigationMenuTriggerStyle()}>
                   Home
-                </NavigationMenuLink>
-              </NavLink>
+                </NavLink>
+              </NavigationMenuLink>
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <NavLink to="/job-boards">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <NavigationMenuLink asChild>
+                <NavLink to="/job-boards" className={navigationMenuTriggerStyle()}>
                   JobBoards
-                </NavigationMenuLink>
-              </NavLink>
+                </NavLink>
+              </NavigationMenuLink>
             </NavigationMenuItem>
 
             <NavigationMenuItem>
-              <NavLink to="/job-applications">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <NavigationMenuLink asChild>
+                <NavLink to="/job-applications" className={navigationMenuTriggerStyle()}>
                   JobApplications
-                </NavigationMenuLink>
-              </NavLink>
+                </NavLink>
+              </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
             { loaderData.isAdmin ?
-              <NavLink to="/admin-logout">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <NavigationMenuLink asChild>
+                <NavLink to="/admin-logout" className={navigationMenuTriggerStyle()}>
                   Logout
-                </NavigationMenuLink>
-              </NavLink>
-            : <NavLink to="/admin-login">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                </NavLink>
+              </NavigationMenuLink>
+            : <NavigationMenuLink asChild>
+                <NavLink to="/admin-login" className={navigationMenuTriggerStyle()}>
                   Login
-                </NavigationMenuLink>
-              </NavLink>
+                </NavLink>
+              </NavigationMenuLink>
             }
             </NavigationMenuItem>
           </NavigationMenuList>

@@ -23,7 +23,6 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
 export default function JobBoards({loaderData}) {
   const fetcher = useFetcher()
-  console.log(loaderData.isAdmin)
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-6">

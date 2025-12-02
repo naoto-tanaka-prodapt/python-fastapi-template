@@ -5,6 +5,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { userContext } from "~/context";
 import { Textarea } from "~/components/ui/textarea";
+import { useState } from "react";
 
 export async function clientLoader({context, params} : Route.ClientLoaderArgs) {
   const me = context.get(userContext)
@@ -19,15 +20,33 @@ export async function clientLoader({context, params} : Route.ClientLoaderArgs) {
 
 export async function clientAction({ request }: Route.ClientActionArgs) {
     const formData = await request.formData()
-    await fetch('/api/job-posts', {
+    const reviewed = formData.get("reviewed")
+    if (reviewed == "false"){
+      const response = await fetch('/api/review-job-description', {
         method: 'POST',
         body: formData
-    })
-    const job_board_id = formData.get("job_board_id")
-    return redirect(`/job-boards/${job_board_id}/job-posts`)
+      })
+      const reviewResponse = await response.json()
+      return { reviewResponse }
+    } else {
+      await fetch('/api/job-posts', {
+        method: 'POST',
+        body: formData
+      })
+      const job_board_id = formData.get("job_board_id")
+      return redirect(`/job-boards/${job_board_id}/job-posts`)
+    }
+    
 }
 
-export default function NewJobPostForm({loaderData}: Route.ComponentProps) {
+export default function NewJobPostForm({loaderData, actionData}: Route.ComponentProps) {
+  const [reviewed, setReviewed] = useState("false")
+  const [summary, setSummary] = useState("")
+  if (actionData && actionData.reviewResponse && reviewed === "false"){
+    setReviewed("true")
+    setSummary(actionData.reviewResponse.overall_summary)
+  }
+
   return (
     <main className="min-h-[200px] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -57,9 +76,17 @@ export default function NewJobPostForm({loaderData}: Route.ComponentProps) {
               />
             </Field>
             <Input id="job_board_id" name="job_board_id" type="hidden" value={loaderData.jobBoardId}/>
+            <Input id="reviewed" name="reviewed" type="hidden" value={reviewed}/>
+            {
+              summary && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
+                  <p className="whitespace-pre-wrap">{summary}</p>
+                </div>
+              )
+            }
             <div className="float-right">
               <Field orientation="horizontal">
-                <Button type="submit">Submit</Button>
+                <Button type="submit">{ reviewed === "false" ? "Review" : "Submit"}</Button>
                 <Button variant="outline" type="button">
                   <Link to={`/job-boards/${loaderData.jobBoardId}/job-posts`}>Cancel</Link>
                 </Button>
