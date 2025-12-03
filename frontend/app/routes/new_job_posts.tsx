@@ -5,7 +5,7 @@ import { Input } from "~/components/ui/input";
 import { Button } from "~/components/ui/button";
 import { userContext } from "~/context";
 import { Textarea } from "~/components/ui/textarea";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export async function clientLoader({context, params} : Route.ClientLoaderArgs) {
   const me = context.get(userContext)
@@ -42,9 +42,17 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 export default function NewJobPostForm({loaderData, actionData}: Route.ComponentProps) {
   const [reviewed, setReviewed] = useState("false")
   const [summary, setSummary] = useState("")
+  const [rewrittenDescription, setRewrittenDescription] = useState("")
   if (actionData && actionData.reviewResponse && reviewed === "false"){
     setReviewed("true")
     setSummary(actionData.reviewResponse.overall_summary)
+    setRewrittenDescription(actionData.reviewResponse.rewritten_description)
+  }
+
+  const descriptionAreaRef = useRef(null)
+
+  const applyRewrittenDescription  = () => {
+    descriptionAreaRef.current.value = rewrittenDescription
   }
 
   return (
@@ -73,17 +81,31 @@ export default function NewJobPostForm({loaderData, actionData}: Route.Component
                 name="description"
                 placeholder="Engineer for AI"
                 required
+                ref={descriptionAreaRef}
               />
             </Field>
             <Input id="job_board_id" name="job_board_id" type="hidden" value={loaderData.jobBoardId}/>
             <Input id="reviewed" name="reviewed" type="hidden" value={reviewed}/>
-            {
-              summary && (
-                <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900">
-                  <p className="whitespace-pre-wrap">{summary}</p>
+            {summary && (
+              <section className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm shadow-sm">
+                <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-600">
+                  <span>Review summary</span>
+                  <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-700">AI review</span>
                 </div>
-              )
-            }
+                <p className="whitespace-pre-wrap leading-relaxed text-slate-900">{summary}</p>
+              </section>
+            )}
+            {rewrittenDescription && (
+              <section className="space-y-3 rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-700">Rewritten description</p>
+                  </div>
+                  <Button type="button" onClick={applyRewrittenDescription}>Fix for me</Button>
+                </div>
+                <p className="whitespace-pre-wrap leading-relaxed text-indigo-900">{rewrittenDescription}</p>
+              </section>
+            )}
             <div className="float-right">
               <Field orientation="horizontal">
                 <Button type="submit">{ reviewed === "false" ? "Review" : "Submit"}</Button>
