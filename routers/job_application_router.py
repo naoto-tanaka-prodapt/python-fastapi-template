@@ -1,6 +1,6 @@
 import os
 from typing import Annotated
-from fastapi import Form, HTTPException, APIRouter, BackgroundTasks
+from fastapi import Depends, Form, HTTPException, APIRouter, BackgroundTasks
 from db import get_session
 from sqlalchemy import text
 from models import JobApplication, JobPost
@@ -9,19 +9,23 @@ from utils import create_random_file_name
 from schemas import JobApplicationForm
 from emailer import send_email
 from utils import evaluate_resume
+from vector_search import ingest_resume_for_recommendataions, get_vector_store
 
 router = APIRouter()
 
 ## Job Application
 @router.post("/api/job-applications")
-async def api_create_new_job_applications(job_application_form: Annotated[JobApplicationForm, Form()], background_task: BackgroundTasks):
+async def api_create_new_job_applications(job_application_form: Annotated[JobApplicationForm, Form()],
+                                          background_task: BackgroundTasks,
+                                          db = Depends(get_session),
+                                          vector_store = Depends(get_vector_store)
+                                          ):
   # check jobpost status
-  with get_session() as session:
-    target = session.get(JobPost, job_application_form.job_post_id)
-    if target is None:
-      raise HTTPException(status_code=404, detail="Job Post not found")
-    if target.is_open is False:
-      raise HTTPException(status_code=400, detail="This job post is already closed")
+  target = db.get(JobPost, job_application_form.job_post_id)
+  if target is None:
+    raise HTTPException(status_code=404, detail="Job Post not found")
+  if target.is_open is False:
+    raise HTTPException(status_code=400, detail="This job post is already closed")
 
   # Upload Resume
   _, extension = os.path.splitext(job_application_form.resume.filename)
@@ -38,10 +42,9 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
       resume_path=file_url
     )
    
-  with get_session() as session:   
-    session.add(new_job_application)
-    session.commit()
-    session.refresh(new_job_application)
+  db.add(new_job_application)
+  db.commit()
+  db.refresh(new_job_application)
 
   background_task.add_task(
     send_email,
@@ -49,12 +52,21 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
     "Acknowledgement",
     "We have received your job application"
   )
+  # background_task.add_task(
+  #   evaluate_resume,
+  #   resume_contents,
+  #   target.description,
+  #   new_job_application.id
+  # )
+  
   background_task.add_task(
-    evaluate_resume,
+    ingest_resume_for_recommendataions,
     resume_contents,
-    target.description,
-    new_job_application.id
+    file_name_random,
+    new_job_application.id,
+    vector_store
   )
+
   return new_job_application
 
 @router.get("/api/job-applications")

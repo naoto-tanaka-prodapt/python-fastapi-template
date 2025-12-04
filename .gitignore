@@ -208,3 +208,5 @@ __marimo__/
 
 # file storage directory
 uploads
+
+qdrant_store

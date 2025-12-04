@@ -12,7 +12,6 @@ from config import settings
 from auth import authenticate_admin, AdminAuthzMiddleware, AdminSessionMiddleware, delete_admin_session
 from schemas import JobPostForm, AdminLoginForm
 from starlette.middleware.base import BaseHTTPMiddleware
-from emailer import send_email
 
 app = FastAPI()
 
@@ -23,24 +22,6 @@ app.include_router(llm_router.router)
 app.add_middleware(AdminAuthzMiddleware)
 app.add_middleware(AdminSessionMiddleware)
 
-
-# PROTECTED_PATHS = [
-#   ("/api/job-boards", "POST")
-# ]
-
-# # # Middleware
-# @app.middleware("http")
-# async def check_cookie_and_add_process_time(request: Request, call_next):
-#   if (request.url.path, request.method) in PROTECTED_PATHS:
-#     cookie = request.cookies.get("admin_session")
-#     if not cookie:
-#       return JSONResponse(
-#                 status_code=403,
-#                 content={"detail": "Not Authenticated"},
-#             )
-    
-#   response = await call_next(request)
-#   return response
 
 @app.get("/api/health")
 async def health():

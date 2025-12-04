@@ -1,7 +1,7 @@
 import random
 import string
 from io import BytesIO
-from PyPDF2 import PdfReader
+from pypdf import PdfReader
 from llm.evaluate_resume import evaluate_resume_with_ai
 from models import JobApplicationAIEvaluation
 from db import get_session

@@ -8,6 +8,9 @@ alembic==1.17.2 # DB migration
 supabase==2.24.0 # File Storage
 httpx==0.28.1 # HTTP client
 openai==2.8.1 # LLM
-PyPDF2==3.0.1 # PDF to Text
 langchain==1.1.0 # Langchain framework
 langchain-openai==1.1.0 # Langchain Open AI interface
+langchain-qdrant==1.1.0 # Langchain with Qdrant vector DB
+pypdf==6.4.0 # PDF to Text
+pytest==9.0.1
+testcontainers==4.13.3
