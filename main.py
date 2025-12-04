@@ -1,17 +1,18 @@
 import os
 from config import settings
 from typing import Annotated
-from fastapi import FastAPI, Form, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, Form, HTTPException, Request, Response
 from routers import job_application_router, job_board_router, llm_router
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from db import get_session
 from sqlalchemy import text
-from models import JobPost
+from models import JobApplication, JobPost
 from config import settings
 from auth import authenticate_admin, AdminAuthzMiddleware, AdminSessionMiddleware, delete_admin_session
 from schemas import JobPostForm, AdminLoginForm
 from starlette.middleware.base import BaseHTTPMiddleware
+from vector_search import get_vector_store, get_recommendation
 
 app = FastAPI()
 
@@ -64,6 +65,19 @@ async def api_create_new_job_posts(job_post_form: Annotated[JobPostForm, Form()]
     session.commit()
     session.refresh(new_job_post)
   return new_job_post
+
+@app.get("/api/job-posts/{job_post_id}/recommend")
+async def api_job_post_recommandation(job_post_id: int, db = Depends(get_session), vector_store = Depends(get_vector_store)):
+  # get description
+  job_post = db.get(JobPost, job_post_id)
+  
+  # get recommendation
+  recommended_applicant = get_recommendation(job_post.description, vector_store)
+  recommended_applicant_id = recommended_applicant.metadata["_id"]
+  application = db.get(JobApplication, recommended_applicant_id)
+  
+  return application
+
 
 ## Auth
 @app.post("/api/admin-login")

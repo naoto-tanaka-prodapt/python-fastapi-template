@@ -30,3 +30,8 @@ def ingest_resume(resume_text: str, resume_url: str, resume_id: int, vector_stor
 def ingest_resume_for_recommendataions(resume, filename, resume_id, vector_store):
     resume_raw_text = extract_text_from_pdf_bytes(resume)
     ingest_resume(resume_raw_text, filename, resume_id, vector_store)
+
+def get_recommendation(description: str, vector_store: QdrantVectorStore):
+    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
+    recommend_applicant = retriever.invoke(description)
+    return recommend_applicant[0]
