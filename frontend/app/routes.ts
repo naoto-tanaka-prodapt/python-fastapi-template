@@ -17,6 +17,9 @@ export default [
         route("/:companyId/edit", "routes/edit_job_boards.tsx"), // /job-boards/:companyId/edit
         route("/:companyId/add-job", "routes/new_job_posts.tsx"), // /job-boards/:companyId/add-job
     ]),
+    // ...prefix("job-posts", [
+    //     route("/:jobPostId", "routes/view_job_post.tsx"),                    // /job-posts/:jobPostId
+    // ]),
     ...prefix("job-applications", [
         route("", "routes/job_applications.tsx"),                    // /job-applications
         route("/new", "routes/new_job_application.tsx"), // /job-applications/new

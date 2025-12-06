@@ -14,3 +14,4 @@ langchain-qdrant==1.1.0 # Langchain with Qdrant vector DB
 pypdf==6.4.0 # PDF to Text
 pytest==9.0.1
 testcontainers==4.13.3
+pandas==2.3.3 # For data analysis
