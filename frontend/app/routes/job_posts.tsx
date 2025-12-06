@@ -42,6 +42,9 @@ export default function JobPosts({loaderData}: Route.ComponentProps) {
                 <TableCell className="py-4">
                   <span className="text-sm text-slate-700 line-clamp-2" title={jobPost.description}>{jobPost.description}</span>
                 </TableCell>
+                <TableCell className="py-4">
+                  <Link to={`/job-posts/${jobPost.id}`} className="text-sm font-medium text-blue-600 hover:underline">See more...</Link>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
