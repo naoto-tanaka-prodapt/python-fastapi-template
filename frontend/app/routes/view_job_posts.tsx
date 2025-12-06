@@ -1,4 +1,4 @@
-import { Form, Link } from "react-router";
+import { Form, Link, useNavigation } from "react-router";
 import { Button } from "~/components/ui/button";
 import type { Route } from "../+types/root";
 import { userContext } from "~/context";
@@ -29,6 +29,8 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
 
 export default function ViewJobPosts({ loaderData, actionData }: Route.ComponentProps) {
   const { job_post: jobPost, job_applications: jobApplications } = loaderData.jobPost;
+  const navigation = useNavigation();
+  const isRecommendationLoading = navigation.state === "submitting";
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
@@ -57,7 +59,9 @@ export default function ViewJobPosts({ loaderData, actionData }: Route.Component
               </div>
               <Form method="post">
                 <Input id="job_post_id" name="job_post_id" type="hidden" value={jobPost.id}/>
-                <Button variant="outline" type="submit">Show Recommendation</Button>
+                <Button className="min-w-[180px]" variant="outline" type="submit" disabled={isRecommendationLoading}>
+                  {isRecommendationLoading ? "Loading..." : "Show Recommendation"}
+                </Button>
               </Form>
             </div>
             {jobApplications.length > 0 ? (
