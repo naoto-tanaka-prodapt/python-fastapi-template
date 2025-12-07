@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import "./app.css"
 import { authMiddleware } from "./middleware";
 
@@ -9,9 +9,13 @@ export default function App() {
     <html>
       <head>
         <title>Jobify</title>
+        <Meta />
+        <Links />
       </head>
       <body>
-        <Outlet></Outlet>
+        <Outlet />
+        <ScrollRestoration />
+        <Scripts />
       </body>
     </html>
   );
