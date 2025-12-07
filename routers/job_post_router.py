@@ -50,12 +50,17 @@ async def api_create_new_job_posts(job_post_form: Annotated[JobPostForm, Form()]
 
 @router.get("/api/job-posts/{job_post_id}/recommend")
 async def api_job_post_recommandation(job_post_id: int, db = Depends(get_session), vector_store = Depends(get_vector_store)):
-  # get description
   job_post = db.get(JobPost, job_post_id)
-  
-  # get recommendation
-  recommended_applicant = get_recommendation(job_post.description, vector_store)
+  if job_post is None:
+    raise HTTPException(status_code=404, detail="Job Post not found")
+
+  recommended_applicant = get_recommendation(job_post.description, vector_store, job_post_id=job_post_id)
+  if recommended_applicant is None:
+    raise HTTPException(status_code=404, detail="No recommendation available for this job post")
+
   recommended_applicant_id = recommended_applicant.metadata["_id"]
   application = db.get(JobApplication, recommended_applicant_id)
-  
+  if application is None or application.job_post_id != job_post_id:
+    raise HTTPException(status_code=404, detail="Recommended applicant not found for this job post")
+
   return application

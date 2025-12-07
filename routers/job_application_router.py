@@ -64,7 +64,8 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
     resume_contents,
     file_name_random,
     new_job_application.id,
-    vector_store
+    vector_store,
+    new_job_application.job_post_id
   )
 
   return new_job_application

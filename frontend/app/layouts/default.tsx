@@ -46,13 +46,13 @@ export default function DefaultLayout( {loaderData}: Route.ComponentProps ) {
               </NavigationMenuLink>
             </NavigationMenuItem>
 
-            <NavigationMenuItem>
+            {/* <NavigationMenuItem>
               <NavigationMenuLink asChild>
                 <NavLink to="/job-applications" className={navigationMenuTriggerStyle()}>
                   JobApplications
                 </NavLink>
               </NavigationMenuLink>
-            </NavigationMenuItem>
+            </NavigationMenuItem> */}
             <NavigationMenuItem>
             { loaderData.isAdmin ?
               <NavigationMenuLink asChild>

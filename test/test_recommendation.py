@@ -15,7 +15,7 @@ def test_background_task(vector_store):
     filename = "test/resumes/ProfileAndrewNg.pdf"
     with open(filename, "rb") as f:
         content = f.read()
-    ingest_resume_for_recommendataions(content, filename, resume_id=1, vector_store=vector_store)
+    ingest_resume_for_recommendataions(content, filename, resume_id=1, vector_store=vector_store, job_post_id=10)
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     result = retriever.invoke("I am looking for an AI trainer")
     assert "Andrew" in result[0].page_content
@@ -61,10 +61,12 @@ def test_job_application_api(db_session, vector_store, client):
     with open(filename, "rb") as f:
         response = client.post("/api/job-applications", data=post_data, files={"resume": ("ProfileAndrewNg.pdf", f, "application/pdf")})
     assert response.status_code == 200
+    created_application = response.json()
     retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     result = retriever.invoke("I am looking for an expert in AI")
     assert "Andrew" in result[0].page_content
-    assert result[0].metadata["_id"] == job_post.id
+    assert result[0].metadata["_id"] == created_application["id"]
+    assert result[0].metadata["job_post_id"] == job_post.id
 
 def test_get_recommendation(vector_store):
     # resume insert
@@ -87,19 +89,24 @@ def test_api_job_post_recommandation(db_session, vector_store, client):
     job_post = JobPost(title="AI Engineer", 
                        description="I am looking for a generalist who can work in python and typescript", 
                        job_board_id = job_board.id)
+    another_job_post = JobPost(title="Duplicate role", 
+                               description="I am looking for a generalist who can work in python and typescript", 
+                               job_board_id = job_board.id)
     db_session.add(job_post)
+    db_session.add(another_job_post)
     db_session.commit()
     db_session.refresh(job_post)
+    db_session.refresh(another_job_post)
     test_resumes = [
-        ('Andrew', 'Ng', 'andrewng@gmail.com', 'ProfileAndrewNg.pdf'),
-        ('Koudai', 'Aono', 'koxudaxi@gmail.com', 'ProfileKoudaiAono.pdf')
+        (another_job_post.id, 'Andrew', 'Ng', 'andrewng@gmail.com', 'ProfileAndrewNg.pdf'),
+        (job_post.id, 'Koudai', 'Aono', 'koxudaxi@gmail.com', 'ProfileKoudaiAono.pdf')
     ]
-    for first_name, last_name, email, filename in test_resumes:
+    for target_post_id, first_name, last_name, email, filename in test_resumes:
         post_data = {
             "first_name": first_name,
             "last_name": last_name,
             "email": email,
-            "job_post_id": job_post.id
+            "job_post_id": target_post_id
         }
         with open(f"test/resumes/{filename}", "rb") as f:
             response = client.post("/api/job-applications", data=post_data, files={"resume": (filename, f, "application/pdf")})
