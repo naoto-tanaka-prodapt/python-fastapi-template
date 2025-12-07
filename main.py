@@ -58,9 +58,7 @@ async def admin_logout(request: Request, response: Response):
   response.delete_cookie(key="admin_session", httponly=True, secure=secure, samesite="LaX")
   
 ## For UI
-app.mount("/assets", StaticFiles(directory="frontend/build/client/assets"))
-
-@app.get("/{full_path:path}")
-async def catch_all(full_path: str):
-  indexFilePath = os.path.join("frontend", "build", "client", "index.html")
-  return FileResponse(path=indexFilePath, media_type="text/html")
+app.mount(
+    "/",
+    StaticFiles(directory="frontend/build/client", html=True),
+)
