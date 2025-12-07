@@ -30,8 +30,8 @@ class JobApplicationForm(BaseModel):
 
 class JobPostForm(BaseModel):
   job_board_id: int
-  title: str = Field(..., min_length=1, max_length=20)
-  description: str = Field(..., min_length=1, max_length=500)
+  title: str = Field(..., min_length=1, max_length=100)
+  description: str = Field(..., min_length=1, max_length=2000)
 
 class AdminLoginForm(BaseModel):
   username : str
