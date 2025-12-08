@@ -32,10 +32,9 @@ def inmemory_vector_store():
         client.close()
 
 def ingest_resume(resume_text: str, resume_url: str, resume_id: int, vector_store: QdrantVectorStore, job_post_id: int | None = None):
-    metadata = {"url": resume_url}
-    if job_post_id is not None:
-        metadata["job_post_id"] = job_post_id
-    doc = Document(page_content=resume_text, metadata=metadata)
+    # if job_post_id is not None:
+    #     metadata["job_post_id"] = job_post_id
+    doc = Document(page_content=resume_text, metadata={"url": resume_url})
     vector_store.add_documents(documents=[doc], ids=[resume_id])
 
 def ingest_resume_for_recommendataions(resume, filename, resume_id, vector_store, job_post_id: int | None = None):
@@ -43,17 +42,16 @@ def ingest_resume_for_recommendataions(resume, filename, resume_id, vector_store
     ingest_resume(resume_raw_text, filename, resume_id, vector_store, job_post_id=job_post_id)
 
 def get_recommendation(description: str, vector_store: QdrantVectorStore, job_post_id: int | None = None):
-    search_kwargs = {"k": 5}
-    if job_post_id is not None:
-        search_kwargs["filter"] = Filter(
-            must=[
-                FieldCondition(
-                    key="metadata.job_post_id",
-                    match=MatchValue(value=job_post_id)
-                )
-            ]
-        )
-    retriever = vector_store.as_retriever(search_kwargs=search_kwargs)
+    # if job_post_id is not None:
+    #     search_kwargs["filter"] = Filter(
+    #         must=[
+    #             FieldCondition(
+    #                 key="metadata.job_post_id",
+    #                 match=MatchValue(value=job_post_id)
+    #             )
+    #         ]
+    #     )
+    retriever = vector_store.as_retriever(search_kwargs={"k": 1})
     recommend_applicant = retriever.invoke(description)
     if not recommend_applicant:
         return None

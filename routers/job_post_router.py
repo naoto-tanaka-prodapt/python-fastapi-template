@@ -60,7 +60,7 @@ async def api_job_post_recommandation(job_post_id: int, db = Depends(get_session
 
   recommended_applicant_id = recommended_applicant.metadata["_id"]
   application = db.get(JobApplication, recommended_applicant_id)
-  if application is None or application.job_post_id != job_post_id:
-    raise HTTPException(status_code=404, detail="Recommended applicant not found for this job post")
+  # if application is None or application.job_post_id != job_post_id:
+  #   raise HTTPException(status_code=404, detail="Recommended applicant not found for this job post")
 
   return application
