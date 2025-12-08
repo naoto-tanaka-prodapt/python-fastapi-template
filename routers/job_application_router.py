@@ -46,12 +46,6 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
   db.commit()
   db.refresh(new_job_application)
 
-  background_task.add_task(
-    send_email,
-    new_job_application.email,
-    "Acknowledgement",
-    "We have received your job application"
-  )
   # background_task.add_task(
   #   evaluate_resume,
   #   resume_contents,
@@ -66,6 +60,13 @@ async def api_create_new_job_applications(job_application_form: Annotated[JobApp
     new_job_application.id,
     vector_store,
     new_job_application.job_post_id
+  )
+
+  background_task.add_task(
+    send_email,
+    new_job_application.email,
+    "Acknowledgement",
+    "We have received your job application"
   )
 
   return new_job_application

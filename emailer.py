@@ -16,8 +16,11 @@ def send_email(to, subject, body):
 
   if settings.PRODUCTION:
     with httpx.Client() as client:
-        response = client.post(url, headers=headers, json=data)
-        response.raise_for_status()
+        try:
+          response = client.post(url, headers=headers, json=data)
+          response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+          print(f"Email failed: {exc}")
   else:
      print("-----Sended Email (In local, just print)-----\n")
      print(f"url: {url}\n")
