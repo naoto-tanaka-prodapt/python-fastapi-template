@@ -1,12 +1,12 @@
 from random import choice
-import asyncio
 from typing import Literal, Tuple
-from agents import Agent, Runner, function_tool, SQLiteSession, set_default_openai_key
+from agents import Agent, function_tool, set_default_openai_key
 from pydantic import BaseModel
 from config import settings
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
+from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 
 # Set API key
 set_default_openai_key(settings.OPENAI_API_KEY)
@@ -104,7 +104,9 @@ def check_answer(skill: str, question: str, answer: str) -> Tuple[bool, str]:
     response = chain.invoke({"skill": skill, "question": question, "answer": answer})
     return response.model_dump_json()
 
-EVALUATION_SYSTEM_PROMPT = """
+EVALUATION_SYSTEM_PROMPT = f"""
+{RECOMMENDED_PROMPT_PREFIX}
+
 You are a specialised skill evaluator. Your job is to evaluate the candidate's proficiency in a given skill
 
 1. Identify which skill you're evaluating (it will be mentioned in the conversation)
@@ -115,11 +117,14 @@ You are a specialised skill evaluator. Your job is to evaluate the candidate's p
    - If the check_answer tool returned incorrect, choose the lower difficulty, without going below 'easy'
    - Stop after 3 questions MAXIMUM
 5. If the correctly answered two of the three questions, then they pass, otherwise they fail
+6. After completion of 3 questions, hand off to the "Interview Orchestrator Agent" passing in the result of the evaluation
 
-DECISION RULES:
-- Maximum 3 questions per skill
+# DECISION RULES:
 
-OUTPUT:
+- Do not give feedback on the user's answer. Always proceed to the next question
+- 3 questions per skill
+
+# OUTPUT:
 
 After the evaluation is complete, return the pass/fail in a json object with the following properties
 - result: true or false
@@ -129,36 +134,13 @@ EVALUATION_USER_PROMPT = """
 Evaluate the user on the following skill: {skill}
 """
 
-async def run_evaluation_agent(session_id, skill):
-    session = SQLiteSession(f"evaluation-{session_id}")
 
-    skill_evaluation_agent = Agent(
-        name="Skill_Evaluation_Agent",
-        instructions=EVALUATION_SYSTEM_PROMPT,
-        model="gpt-5.1",
-        tools=[
-            get_question,
-            check_answer
-        ]
-    )
-
-    query = EVALUATION_USER_PROMPT.format(skill=skill)
-
-    while query != "bye":
-        result = await Runner.run(
-            skill_evaluation_agent,
-            query,
-            session=session
-        )
-        print(f"AI: {result.final_output}")
-        query = input("User: ")
-
-    
-async def main():
-    skill = "Python"
-    session_id = "session123"
-    
-    await run_evaluation_agent(session_id, skill) 
-
-if __name__ == "__main__":
-    asyncio.run(main())
+skill_evaluation_agent = Agent(
+    name="Skill_Evaluation_Agent",
+    instructions=EVALUATION_SYSTEM_PROMPT,
+    model="gpt-5.1",
+    tools=[
+        get_question,
+        check_answer
+    ]
+)
