@@ -1,11 +1,10 @@
+import json
 from random import choice
 from typing import Literal, Tuple
 from agents import Agent, function_tool, set_default_openai_key
-from pydantic import BaseModel
+from braintrust import load_prompt
+from openai import OpenAI
 from config import settings
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
 from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 
 # Set API key
@@ -60,49 +59,17 @@ question_bank = {
 def get_question(topic: str, difficulty: Literal['easy', 'medium', 'hard']) -> str:
     return choice(question_bank[topic.lower()][difficulty.lower()])
 
-
-class ValidationResult(BaseModel):
-    correct: bool
-    reasoning: str
-
-VALIDATION_PROMPT = """
-Evaluate the given interview answer. 
-
-# Instructions
-
-Provide a JSON response with: 
-- correct: true or false depending if the answer was correct or not for the given question in the context of the given skill. 
-- reasoning: brief explanation (2-3 sentences) 
-
-For subjective answers, mark the answer true if the majority of the important points have been mentioned.
-
-Answers are expected to be brief, so be rigorous but fair. Look for technical accuracy and clarity. 
-
-# Output Format
-
-{format_instructions}
-
-# Task
-
-Skill: {skill} 
-Question: {question} 
-Answer: 
-{answer}
-
-Evaluation:"""
-
 @function_tool
 def check_answer(skill: str, question: str, answer: str) -> Tuple[bool, str]:
-    model = ChatOpenAI(model="gpt-5.1-chat-latest", api_key=settings.OPENAI_API_KEY)
-    parser = PydanticOutputParser(pydantic_object=ValidationResult)
-    prompt = PromptTemplate(
-        template=VALIDATION_PROMPT,
-        input_variables=["skill", "question", "answer"],
-        partial_variables={"format_instructions": parser.get_format_instructions()},
+    prompt = load_prompt(project="Prodapt", slug="check-answer-prompt-8bad", version="c35af8c353baa23c")
+    details = prompt.build(skill=skill, question=question, answer=answer)
+    client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    response = client.chat.completions.create(
+        model="gpt-5.1", temperature=0,
+        response_format=details["response_format"],
+        messages=details["messages"]
     )
-    chain = prompt | model | parser
-    response = chain.invoke({"skill": skill, "question": question, "answer": answer})
-    return response.model_dump_json()
+    return json.loads(response.choices[0].message.content)
 
 EVALUATION_SYSTEM_PROMPT = f"""
 {RECOMMENDED_PROMPT_PREFIX}
