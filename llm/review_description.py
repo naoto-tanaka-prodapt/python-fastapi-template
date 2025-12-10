@@ -1,10 +1,14 @@
 from typing import List, Literal
+from braintrust import init_logger, traced
+from braintrust_langchain import BraintrustCallbackHandler, set_global_handler
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from pydantic import BaseModel
 from langchain_core.output_parsers import PydanticOutputParser
-
 from config import settings
+
+handler = BraintrustCallbackHandler()
+set_global_handler(handler)
 
 # Create a ChatOpenAI model
 model = ChatOpenAI(model="gpt-5.1-chat-latest", api_key=settings.OPENAI_API_KEY)
@@ -146,7 +150,7 @@ Create the final polished job description by integrating the improvements.
 Return only the final text.
 """
 
-
+@traced(name="Review Job Description")
 def review_description(description: str):
     
     review_parser = PydanticOutputParser(pydantic_object=ReviewedDescription)

@@ -1,4 +1,6 @@
 import os
+
+from braintrust import init_logger
 from config import settings
 from typing import Annotated
 from fastapi import FastAPI, Form, HTTPException, Request, Response
@@ -10,6 +12,8 @@ from sqlalchemy import text
 from config import settings
 from auth import authenticate_admin, AdminAuthzMiddleware, AdminSessionMiddleware, delete_admin_session
 from schemas import AdminLoginForm
+
+init_logger(project="Prodapt", api_key=settings.BRAINTRUST_API_KEY)
 
 app = FastAPI()
 
