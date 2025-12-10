@@ -1,10 +1,14 @@
-from agents import Agent, Runner, function_tool, SQLiteSession, set_default_openai_key
+from agents import Agent, Runner, function_tool, SQLiteSession, set_default_openai_key, set_trace_processors
 from config import settings
 from agents.extensions.handoff_prompt import RECOMMENDED_PROMPT_PREFIX
 from eval_agent import skill_evaluation_agent
+from braintrust import init_logger
+from braintrust.wrappers.openai import BraintrustTracingProcessor
 
 # Set API key
 set_default_openai_key(settings.OPENAI_API_KEY)
+set_trace_processors([BraintrustTracingProcessor(
+    init_logger("Prodapt", api_key=settings.BRAINTRUST_API_KEY))])
 
 # Create DB
 db = {
